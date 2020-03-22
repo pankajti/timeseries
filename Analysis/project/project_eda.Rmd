@@ -1,0 +1,27 @@
+---
+title: "project_eda"
+author: "Pankaj Kumar"
+date: "3/20/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+ 
+```{r cars}
+
+library(tswge)
+library(tidyverse)
+
+bit_df = read.csv("/Users/pankaj/Downloads/cc_histories/bitcoin.csv", header=T)
+
+plotts.sample.wge(bit_df$close)
+
+artrans.wge(bit_df$close, phi.tr =1)
+
+
+```
+
+ 

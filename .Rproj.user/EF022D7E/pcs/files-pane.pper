@@ -1,0 +1,9 @@
+{
+    "path" : "~/dev/git/smu/timeseries",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}

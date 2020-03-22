@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1579611002527.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "A2ED24A",
+    "lastKnownWriteTime" : 1584841457,
+    "last_content_update" : 1584841457,
+    "path" : "~/dev/git/smu/timeseries/Analysis/for_live_session_3.R",
+    "project_path" : "Analysis/for_live_session_3.R",
+    "properties" : {
+        "cursorPosition" : "13,0",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
