@@ -201,6 +201,7 @@ Now we want to try a Non-stationary model. Let's see what an ARIMA does with thi
 bike_tr1 = artrans.wge(bikeTrain$`Total Users`, phi = 1)
 
 ```
+
 The first difference removed the slowly damping behavior from the autocorrelations very well. 
 
 ```{r ARIMA model 2, results = 'hide', message=FALSE, eval = TRUE}
@@ -221,15 +222,15 @@ Residual_Diagnostic_Plot_ARIMA = plotts.sample.wge(est_bike_arima$res, arlimits 
 
 ```
 ```{r ARIMA ljung 1, result='hide', message= FALSE}
-ljung24 = ljung.wge(est_bike_arima$res,p=2,q=1)
-ljung48 = ljung.wge(est_bike_arima$res,p=2,q=1,K=48)
+ljung24 = ljung.wge(est_bike_arima$res,p=1,q=1)
+ljung48 = ljung.wge(est_bike_arima$res,p=1,q=1,K=48)
 ```
 ```{r ARIMA ljung 2}
-print(ljung24$pval) #0.7180754
-print(ljung48$pval) #0.1016302
+print(ljung24$pval) #0.12787
+print(ljung48$pval) #0.01794144
 ```
 
-The ljung-box test with k of 24 and 48 give us p-values respectively of 0.72 and 0.1. This means there is not sufficient evidence to reject the null hypothesis of white noise. This means we don't have evidence for the residuals being correlated. 
+The ljung-box test with k of 24 and 48 give us p-values respectively of 0.13 and 0.02. This means there is an unclear result there is evidence both for and against white noise.  
 
 
 ```{r ARIMA model 5, eval = TRUE}
@@ -259,6 +260,7 @@ lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$ll
       type= "l", col='blue')
 
 ```
+
 Again we can see the forcast doesn't match the residuals very well. 
 
 ```{r ARIMA model 7, eval = TRUE}
@@ -272,6 +274,89 @@ ASE2_ARIMA111
 
 The ASE for this ARIMA(1,1,1) model is 5382. This was even larger than the ASE for the ARMA model. 
 
+#### ARUMA Model
+
+Now we want to try a Non-stationary model. Let's see what an ARUMA does with this. 
+
+```{r ARUMA model 1, eval = TRUE}
+
+### ARUMA model 
+
+bike_tr365 = artrans.wge(bikeTrain$`Total Users`, phi.tr = c(rep(0,364),1))
+bike_tr365.1 = artrans.wge(bike_tr365, phi = 1)
+```
+
+The first difference removed the slowly damping behavior from the autocorrelations very well. 
+
+```{r ARUMA model 2, results = 'hide', message=FALSE, eval = TRUE}
+
+bic_ARUMA = aic5.wge(bike_tr365.1, type='bic') # picks p=0, q=1
+```
+```{r ARUMA model 3, eval = TRUE}
+
+bic_ARUMA
+
+```
+Both the AIC and BIC chose p=1 and q=1. 
+
+```{r ARUMA model 4, eval = TRUE}
+est_bike_arima = est.arma.wge(bike_tr365.1, p=0, q=1)
+
+Residual_Diagnostic_Plot_ARUMA = plotts.sample.wge(est_bike_arima$res, arlimits = TRUE)
+
+```
+```{r ARUMA ljung 1, result='hide', message= FALSE}
+ljung24 = ljung.wge(est_bike_arima$res,p=0,q=1)
+ljung48 = ljung.wge(est_bike_arima$res,p=0,q=1,K=48)
+```
+```{r ARUMA ljung 2}
+print(ljung24$pval) #0.004088722
+print(ljung48$pval) #4.988254e-05
+```
+
+The ljung-box test with k of 24 and 48 give us p-values near zero. This is strong evidence to reject the null hypothesis of white noise. 
+
+
+```{r ARUMA model 5, eval = TRUE}
+
+for_bike_arima= fore.aruma.wge(bikeTrain$`Total Users`, phi=est_bike_arima$phi, 
+                               theta = est_bike_arima$theta, d=1, 
+                               n.ahead= 182 , limits = T , lastn=F )
+```
+
+```{r ARUMA model 6, eval = TRUE}
+
+total_users = bike_data$`Total Users`
+len_total_users = length(total_users)
+
+plot(x= seq((len_total_users -182 ), len_total_users) , y = 
+       total_users[(len_total_users -182 ): len_total_users], type='l')
+lines(x= seq((len_total_users -182 ), len_total_users) , y = 
+        total_users[(len_total_users -182 ): len_total_users], type='l')
+
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$f,
+      type= "l", col='blue')
+
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$ul,
+      type= "l", col='blue')
+
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$ll,
+      type= "l", col='blue')
+
+```
+
+Again we can see the forcast doesn't match the residuals very well. 
+
+```{r ARUMA model 7, eval = TRUE}
+
+ASE2_ARUMA011 = mean((for_bike_arima$f - total_users[(len_total_users -182+1 ): len_total_users])^2)
+ASE2_ARUMA011
+
+# Compare all models with the ASE… this does not mean you have to choose the model with the lowest ASE.
+# Pick a forecast horizon based on your “problem” from part 3 above and provide the forecasts and prediction limits.  
+```
+
+The ASE for this ARIMA(1,1,1) model is 5382. This was even larger than the ASE for the ARMA model. 
 
 ## VAR
 
@@ -361,15 +446,83 @@ ASE_NN
 ```
 
 #### Ensemble Model 
-```{r ensemble model, eval = FALSE }
+```{r ensemble model, eval = TRUE }
+# ensemble model 
 
-# acfs, spectral density, factor tables, etc.
-# to do 
+# plot of ARMA Model 
+total_users = bike_data$`Total Users`
+len_total_users = length(total_users)
+
+plot(x= seq((len_total_users -182 ), len_total_users) , y = 
+       total_users[(len_total_users -182 ): len_total_users], type='l')
+
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arma$f,
+      type= "l", col = 'blue')
+
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arma$ll,
+      type= "l", col = 'blue')
+
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arma$ul,
+      type= "l", col = 'blue')
+
+# plot of the ARIMA model
+total_users = bike_data$`Total Users`
+len_total_users = length(total_users)
+
+plot(x= seq((len_total_users -182 ), len_total_users) , y = 
+       total_users[(len_total_users -182 ): len_total_users], type='l')
+lines(x= seq((len_total_users -182 ), len_total_users) , y = 
+        total_users[(len_total_users -182 ): len_total_users], type='l')
+
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$f,
+      type= "l", col='blue')
+
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$ul,
+      type= "l", col='blue')
+
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$ll,
+      type= "l", col='blue')
+
+# plot of the VAR model 
+
+t = c(1:182)
+plot(t, preds$fcst$Total.Users[1:182],  type='l',col="blue", ylim=c(0,450))
+lines(t, bikeTest$"Total Users",col="black")
+lines(t, preds$fcst$Total.Users[183:364], col="blue")
+lines(t, preds$fcst$Total.Users[365:546],  col="blue")
+
+# plot of the NN 
+
+
+total_users = bike_data$"Total Users"
+
+plot(x= seq((len_total_users -182 ), len_total_users) , y = 
+       total_users[(len_total_users -182 ): len_total_users], type='l')
+
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = fore.mlp$mean,
+      type= "l", col='blue')
+
 # take top two models and average forcast. Then compute ASE. 
 
-# ensemble model 
-ASE_Ensemble = 2.2
+ensemble = ((preds$fcst$Total.Users[1:182] + for_bike_arma$f)/2)
 
+# plot of ensemble
+
+# plot of the ARIMA model
+total_users = bike_data$`Total Users`
+len_total_users = length(total_users)
+
+plot(x= seq((len_total_users -182 ), len_total_users) , y = 
+       total_users[(len_total_users -182 ): len_total_users], type='l')
+
+lines(x= seq((len_total_users -182 ), len_total_users) , y = 
+        total_users[(len_total_users -182 ): len_total_users], type='l')
+
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = ensemble,
+      type= "l", col='blue')
+
+ASE_Ensemble = mean((ensemble-bikeTest$"Total Users")^2)
+ASE_Ensemble
 
 ```
 
@@ -379,14 +532,10 @@ ASE_Ensemble = 2.2
 print("ASE for each model")
 print(c("ARMA(2,1) ", as.integer(ASE_ARMA21)))
 print(c('ARIMA(1,1,1,) ', as.integer(ASE2_ARIMA111)))
+print(c("ARUMA(0,1,1) with s = 365", as.integer(ASE2_ARUMA011)))
 print(c("VAR ", as.integer(ASE_VAR)))
 print(c("NN", as.integer(ASE_NN)))
-#print(c("Ensemble", as.integer(ASE_Ensemble)))
-
-# Compare all models with the ASE… this does not mean you have to choose the model with the lowest ASE. 
-# Pick a forecast horizon based on your “problem” from part 3 above and provide the forecasts and prediction limits.   
-# Discuss rational 
-
+print(c("Ensemble", as.integer(ASE_Ensemble)))
 
 ```
  
