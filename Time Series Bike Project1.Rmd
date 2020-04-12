@@ -8,20 +8,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-## Rubric 
 
-1. Pick a data set that has two or more variables recorded over time (similar to the Schumway LA air quality data from Unit 12. (dataset: lap from package: astsa) (can’t use this one  )
-2. Select a response from the data set.  
-3.  Be creative and come up with a scenario as to why a client would want to analyze this data and why this response is important!  Or better yet, use a real problem that you are interested in!
-4. Fit at least one model from each of the following four categories (provide all plots and tables needed to ID these models: acfs, spectral density, factor tables, etc.):
-	a. ARMA / ARIMA / ARUMA / Signal Plus Noise (univariate analysis)
-	b. VAR with at least one explanatory model.
-	c.  Neural Network
-	d. Ensemble model using at least two of the above.  (this model does not have to “beat” your other models.
-5. Compare all models with the ASE… this does not mean you have to choose the model with the lowest ASE. 
-6. Pick a forecast horizon based on your “problem” from part 3 above and provide the forecasts and prediction limits.  
-7. Create a ppt and a 7-minute video describing your analysis and steps 1 – 6 above.   
-8. Post that video to you-Tube and the (private) link to the Google-Doc and submit your ppt and Rmd File (or Jupyter notebook) to 2DS.  Please leave the link on the Google Doc for a week so others can learn from your presentation.  Please check out at least 3 of your peer’s presentations and please watch your own presentation as well.   It is often very useful (although always a bit awkward for me at least ;) to watch yourself present!
+
 
 ## Time Series Bike Share Project
 
@@ -104,31 +92,21 @@ acf(first_half)
 acf(second_half)
 ```
 
-The mean of the realization appears to be varying based on time. This is because it looks like there is seasonality on the order of roughly one year and that seasonality makes the change in trend over time more apparent. However we can't be sure this is trend or if this is just wandering especially since our dataset is so short. We only have one realization of total users because of the nature of the dataset so we can't average realizations to have a better estimation of this either. We will be investigating stationary models of the data. [to do: change this to non-stationary and add models. ]
+The mean of the realization appears to be varying based on time. This is because it looks like there is seasonality on the order of roughly one year and that seasonality makes the change in trend over time more apparent. However we can't be sure this is trend or if this is just wandering especially since our dataset is so short. We only have one realization of total users because of the nature of the dataset so we can't average realizations to have a better estimation of this either. This realization appears to be non-stationary but we will be investigating both stationary and non-stationary models. 
 
-It's hard to tell if there is change in variance over time since we have only one realization. It appears there may be smaller variance at the beginning of the realization and larger variance towards the end. However for now we will assume the data is stationary.  [to do: change this to non-stationary and add models. ]
+It's hard to tell if there is change in variance over time since we have only one realization. It appears there may be smaller variance at the beginning of the realization and larger variance towards the end. 
 
 The slow decay of the ACF is indicative of non-stationarity. 
 The first and second halves are slightly different. This is an indicator of non-stationary data. 
 
-to do: 
-Comment on ACF to determine possible model type. 
-Comment on spectral density to determine model type. 
-
 We can see from the spectral density there is a peak at zero which is indicative of wandering.
-
-
 
 #### ARMA Model
 
 We want to see what an ARMA model does with this data. 
-
-to do: fix this so the forcast isn't predicting with lastn. Instead it should be a test/train set. 
+ 
 
 ```{r ARMA Model 1 }
-
-# acfs, spectral density, factor tables, etc.
-# to do 
 
 # ARMA Model:
 
@@ -300,14 +278,14 @@ bic_ARUMA
 Both the AIC and BIC chose p=1 and q=1. 
 
 ```{r ARUMA model 4, eval = TRUE}
-est_bike_arima = est.arma.wge(bike_tr365.1, p=0, q=1)
+est_bike_aruma = est.arma.wge(bike_tr365.1, p=0, q=1)
 
-Residual_Diagnostic_Plot_ARUMA = plotts.sample.wge(est_bike_arima$res, arlimits = TRUE)
+Residual_Diagnostic_Plot_ARUMA = plotts.sample.wge(est_bike_aruma$res, arlimits = TRUE)
 
 ```
 ```{r ARUMA ljung 1, result='hide', message= FALSE}
-ljung24 = ljung.wge(est_bike_arima$res,p=0,q=1)
-ljung48 = ljung.wge(est_bike_arima$res,p=0,q=1,K=48)
+ljung24 = ljung.wge(est_bike_aruma$res,p=0,q=1)
+ljung48 = ljung.wge(est_bike_aruma$res,p=0,q=1,K=48)
 ```
 ```{r ARUMA ljung 2}
 print(ljung24$pval) #0.004088722
@@ -319,8 +297,8 @@ The ljung-box test with k of 24 and 48 give us p-values near zero. This is stron
 
 ```{r ARUMA model 5, eval = TRUE}
 
-for_bike_arima= fore.aruma.wge(bikeTrain$`Total Users`, phi=est_bike_arima$phi, 
-                               theta = est_bike_arima$theta, d=1, 
+for_bike_aruma= fore.aruma.wge(bikeTrain$`Total Users`, phi=est_bike_arima$phi, 
+                               theta = est_bike_aruma$theta, d=1, 
                                n.ahead= 182 , limits = T , lastn=F )
 ```
 
@@ -334,13 +312,13 @@ plot(x= seq((len_total_users -182 ), len_total_users) , y =
 lines(x= seq((len_total_users -182 ), len_total_users) , y = 
         total_users[(len_total_users -182 ): len_total_users], type='l')
 
-lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$f,
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_aruma$f,
       type= "l", col='blue')
 
-lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$ul,
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_aruma$ul,
       type= "l", col='blue')
 
-lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$ll,
+lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_aruma$ll,
       type= "l", col='blue')
 
 ```
@@ -349,7 +327,7 @@ Again we can see the forcast doesn't match the residuals very well.
 
 ```{r ARUMA model 7, eval = TRUE}
 
-ASE2_ARUMA011 = mean((for_bike_arima$f - total_users[(len_total_users -182+1 ): len_total_users])^2)
+ASE2_ARUMA011 = mean((for_bike_aruma$f - total_users[(len_total_users -182+1 ): len_total_users])^2)
 ASE2_ARUMA011
 
 # Compare all models with the ASE… this does not mean you have to choose the model with the lowest ASE.
@@ -446,9 +424,12 @@ ASE_NN
 ```
 
 #### Ensemble Model 
-```{r ensemble model, eval = TRUE }
+```{r ensemble model 1, eval = TRUE }
 # ensemble model 
+```
 
+##### ARMA Model Forecast Recap
+```{r ensemble model 2, eval = TRUE }
 # plot of ARMA Model 
 total_users = bike_data$`Total Users`
 len_total_users = length(total_users)
@@ -464,7 +445,10 @@ lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arma$ll,
 
 lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arma$ul,
       type= "l", col = 'blue')
+```
 
+##### ARIMA Model Forecast Recap
+```{r ensemble model 3, eval = TRUE }
 # plot of the ARIMA model
 total_users = bike_data$`Total Users`
 len_total_users = length(total_users)
@@ -483,6 +467,10 @@ lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$ul
 lines(x= seq((len_total_users -182+1 ), len_total_users) , y = for_bike_arima$ll,
       type= "l", col='blue')
 
+```
+
+##### VAR Model Forecast Recap
+```{r ensemble model 4, eval = TRUE }
 # plot of the VAR model 
 
 t = c(1:182)
@@ -491,8 +479,11 @@ lines(t, bikeTest$"Total Users",col="black")
 lines(t, preds$fcst$Total.Users[183:364], col="blue")
 lines(t, preds$fcst$Total.Users[365:546],  col="blue")
 
-# plot of the NN 
+```
 
+##### ARMA Model Forecast Recap
+```{r ensemble model 5, eval = TRUE }
+# plot of the NN 
 
 total_users = bike_data$"Total Users"
 
@@ -502,13 +493,16 @@ plot(x= seq((len_total_users -182 ), len_total_users) , y =
 lines(x= seq((len_total_users -182+1 ), len_total_users) , y = fore.mlp$mean,
       type= "l", col='blue')
 
-# take top two models and average forcast. Then compute ASE. 
+```
 
+##### Ensemble Model build
+```{r ensemble model 6, eval = TRUE }
+# take top two models and average forecast.
+
+# the VAR model and the ARMA model were chosen for the ensemble. Thier forecasts were averaged. 
 ensemble = ((preds$fcst$Total.Users[1:182] + for_bike_arma$f)/2)
 
-# plot of ensemble
-
-# plot of the ARIMA model
+# plot of the ensemble model
 total_users = bike_data$`Total Users`
 len_total_users = length(total_users)
 
@@ -521,6 +515,7 @@ lines(x= seq((len_total_users -182 ), len_total_users) , y =
 lines(x= seq((len_total_users -182+1 ), len_total_users) , y = ensemble,
       type= "l", col='blue')
 
+# ASE for the Ensemble
 ASE_Ensemble = mean((ensemble-bikeTest$"Total Users")^2)
 ASE_Ensemble
 
@@ -532,10 +527,14 @@ ASE_Ensemble
 print("ASE for each model")
 print(c("ARMA(2,1) ", as.integer(ASE_ARMA21)))
 print(c('ARIMA(1,1,1,) ', as.integer(ASE2_ARIMA111)))
-print(c("ARUMA(0,1,1) with s = 365", as.integer(ASE2_ARUMA011)))
+#print(c("ARUMA(0,1,1) with s = 365", as.integer(ASE2_ARUMA011)))
 print(c("VAR ", as.integer(ASE_VAR)))
 print(c("NN", as.integer(ASE_NN)))
 print(c("Ensemble", as.integer(ASE_Ensemble)))
 
 ```
+ 
+The best performing model was the ARMA(2,1) model followed by the Ensemble model. This was counter intuitive and disappointing. More model parameter and tuning may have yielded a different result. 
+ 
+For the Deparment of Transporation the we recommend the ARMA(2,1) model which is to say more or less that we recommend just using the mean. 
  
